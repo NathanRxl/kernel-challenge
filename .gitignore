@@ -1,0 +1,18 @@
+# Pycharm files
+.idea/
+
+# Pycache
+__pycache__/
+*/__pycache__/*
+
+# Data
+data/
+
+# Notebooks
+notebooks/
+
+# Submissions
+submissions/
+
+# References
+references/
