@@ -5,6 +5,7 @@ However they can be used in script as well.
 
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.ndimage.interpolation import rotate
 
 
 def show_image(X_train, y_train, image_nb, color=False):
@@ -25,6 +26,7 @@ def show_image(X_train, y_train, image_nb, color=False):
     else:
         # Grey
         digit_image = X_train.loc[image_nb].values.reshape(32, 32, order='F')
+    digit_image = rotate(digit_image, -90)
     plt.imshow(digit_image, cmap='gray')
-    plt.title("Image of a {}".format(y_train[image_nb]))
+    plt.title("Image of a {}".format(y_train[image_nb - 1]))
     plt.show()
