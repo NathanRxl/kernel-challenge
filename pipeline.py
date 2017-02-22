@@ -1,4 +1,5 @@
 from time import time
+import numpy as np
 
 import tools
 import models
@@ -14,7 +15,9 @@ data_loader = tools.DataLoader(path_to_data=path_to_data)
 
 print("\tLoad preprocessed train data ... ", end="", flush=True)
 X_train, y_train = data_loader.load_data("grey_Xtr.csv", "Ytr.csv")
-X_train = X_train.as_matrix()
+
+features_file = "color_1_filter_Xtr.npy"
+X_train = np.load(path_to_data + features_file)
 print("OK")
 
 # Initiate the model
@@ -38,7 +41,9 @@ print(round(train_score, 5), end="\n\n")
 print("\tLoad preprocessed test data ... ", end="", flush=True)
 # Load test data
 X_test = data_loader.load_data("grey_Xte.csv")
-X_test = X_test.as_matrix()
+
+features_file = "color_1_filter_Xte.npy"
+X_test = np.load(path_to_data + features_file)
 print("OK")
 
 print("\tMake predictions on test data ... ", end="", flush=True)

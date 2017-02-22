@@ -1,5 +1,4 @@
-import pandas as pd
-from datetime import datetime
+import numpy as np
 
 
 def rgb2grey(X):
@@ -15,22 +14,25 @@ def rgb2grey(X):
     return grey_X.filter(regex="grey_*")
 
 
-def create_submission(y_pred, submission_folder_path="submissions/",
-                      output_filename=None):
+def color_images_from_df(color_df):
     """
-    Create a submit csv file from mids_prediction.
-    mids_prediction should be of the form : {mid: list_of_recipients}
+    Convert the dataframe of the color images into a numpy matrix of size :
+    (number_images, 32, 32, 3)
     """
-    if output_filename is None:
-        output_filename = (
-            "submission_" +
-            datetime.now().strftime("%Y_%m_%d_%M_%S") +
-            ".txt"
-        )
+    X = color_df.as_matrix()
+    n_images = X.shape[0]
+    color_images = np.zeros((n_images, 32, 32, 3), dtype="float32")
+    for i in range(3):
+        color_images[:,:,:,i] = (X[:,32*32*i:32*32*(i+1)]
+                                 .reshape(n_images, 32, 32))
+    return color_images
 
-    submission = pd.read_csv("submissions/sample_submission.csv")
-    submission["Prediction"] = y_pred
-    submission.to_csv(
-        submission_folder_path + output_filename,
-        index=False
-    )
+
+def gray_images_from_df(gray_df):
+    """
+    Convert the dataframe of the gray images into a numpy matrix of shape :
+    (number_images, 32, 32)
+    """
+    images = gray_df.as_matrix().astype(np.float32)
+    n_images = images.shape[0]
+    return images.reshape((n_images, 32, 32))

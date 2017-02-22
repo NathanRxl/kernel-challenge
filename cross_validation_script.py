@@ -14,13 +14,20 @@ print("Cross-validation script", end="\n\n")
 
 path_to_data = "data/"
 data_loader = tools.DataLoader(path_to_data=path_to_data)
-X_train, y_train = data_loader.load_data("grey_Xtr.csv", "Ytr.csv")
+
+# Load and compute the features
+X_train, y_train = data_loader.load_data("color_Xtr.csv", "Ytr.csv")
+
+features_file = "color_1_filter_Xtr.npy"
+X_train = np.load(path_to_data + features_file)
+
+print("Number of features :", X_train.shape[1], end="\n\n")
 
 # Cross validation
 n_splits = 5
 kf = KFold(n_splits=n_splits, shuffle=True, random_state=2)
 cv_scores = []
-cv_splits = kf.split(X_train.index.tolist())
+cv_splits = kf.split(np.arange(len(y_train)))
 
 # Define the model
 kernel_model = models.LogisticRegression(
@@ -30,6 +37,7 @@ kernel_model = models.LogisticRegression(
     multi_class="multinomial"
 )
 
+
 for n_fold, (train_fold_idx, test_fold_idx) in enumerate(cv_splits):
 
     print(
@@ -38,10 +46,10 @@ for n_fold, (train_fold_idx, test_fold_idx) in enumerate(cv_splits):
         flush=True
     )
 
-    X_fold_train = X_train.iloc[train_fold_idx].as_matrix()
+    X_fold_train = X_train[train_fold_idx]
     y_fold_train = y_train[train_fold_idx]
 
-    X_fold_test = X_train.iloc[test_fold_idx].as_matrix()
+    X_fold_test = X_train[test_fold_idx]
     y_fold_test = y_train[test_fold_idx]
 
     kernel_model.fit(X_fold_train, y_fold_train)
