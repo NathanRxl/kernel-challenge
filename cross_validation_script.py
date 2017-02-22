@@ -6,6 +6,7 @@ from sklearn.model_selection import KFold
 import tools
 import models
 import metrics
+from penalizations import ridge, grad_ridge
 
 initial_time = time()
 
@@ -23,24 +24,24 @@ cv_splits = kf.split(X_train.index.tolist())
 
 # Define the model
 kernel_model = models.LogisticRegression(
-        C=0.03,
-        multi_class='multinomial',
-        solver='lbfgs',
-        n_jobs=-1
+    penalty=ridge,
+    grad_penalty=grad_ridge,
+    lbda=0.1,
+    multi_class="multinomial"
 )
 
 for n_fold, (train_fold_idx, test_fold_idx) in enumerate(cv_splits):
-    
+
     print(
         "Start working on fold number", n_fold + 1, "... ",
         end="",
         flush=True
     )
-    
-    X_fold_train = X_train.iloc[train_fold_idx]
+
+    X_fold_train = X_train.iloc[train_fold_idx].as_matrix()
     y_fold_train = y_train[train_fold_idx]
-    
-    X_fold_test = X_train.iloc[test_fold_idx]
+
+    X_fold_test = X_train.iloc[test_fold_idx].as_matrix()
     y_fold_test = y_train[test_fold_idx]
 
     kernel_model.fit(X_fold_train, y_fold_train)

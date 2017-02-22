@@ -1,9 +1,9 @@
-import pandas as pd
 from time import time
 
 import tools
 import models
 import metrics
+from penalizations import ridge, grad_ridge
 
 initial_time = time()
 
@@ -14,14 +14,15 @@ data_loader = tools.DataLoader(path_to_data=path_to_data)
 
 print("\tLoad preprocessed train data ... ", end="", flush=True)
 X_train, y_train = data_loader.load_data("grey_Xtr.csv", "Ytr.csv")
+X_train = X_train.as_matrix()
 print("OK")
 
 # Initiate the model
 kernel_model = models.LogisticRegression(
-        C=0.03,
-        multi_class='multinomial',
-        solver='lbfgs',
-        n_jobs=-1
+    penalty=ridge,
+    grad_penalty=grad_ridge,
+    lbda=0.1,
+    multi_class="multinomial"
 )
 
 print("\tFit the model to the train data ... ")
@@ -37,6 +38,7 @@ print(round(train_score, 5), end="\n\n")
 print("\tLoad preprocessed test data ... ", end="", flush=True)
 # Load test data
 X_test = data_loader.load_data("grey_Xte.csv")
+X_test = X_test.as_matrix()
 print("OK")
 
 print("\tMake predictions on test data ... ", end="", flush=True)
