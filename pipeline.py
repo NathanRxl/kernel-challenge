@@ -1,10 +1,9 @@
 import pandas as pd
 from time import time
 
-from sklearn.metrics import accuracy_score
-
 import tools
 import models
+import metrics
 
 initial_time = time()
 
@@ -32,7 +31,7 @@ kernel_model.fit(X_train, y_train)
 # Compute the training score
 print("\tTraining score: ", end="", flush=True)
 y_predict_train = kernel_model.predict(X_train)
-train_score = accuracy_score(y_predict_train, y_train)
+train_score = metrics.accuracy_score(y_predict_train, y_train)
 print(round(train_score, 5), end="\n\n")
 
 print("\tLoad preprocessed test data ... ", end="", flush=True)

@@ -2,10 +2,10 @@ from time import time
 import numpy as np
 
 from sklearn.model_selection import KFold
-from sklearn.metrics import accuracy_score
 
 import tools
 import models
+import metrics
 
 initial_time = time()
 
@@ -45,8 +45,9 @@ for n_fold, (train_fold_idx, test_fold_idx) in enumerate(cv_splits):
 
     kernel_model.fit(X_fold_train, y_fold_train)
     y_pred = kernel_model.predict(X_fold_test)
-    
-    fold_score = accuracy_score(y_pred, y_fold_test)
+
+    fold_score = metrics.accuracy_score(y_pred, y_fold_test)
+
     print(fold_score)
     cv_scores.append(fold_score)
 
