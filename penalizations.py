@@ -27,6 +27,14 @@ def prox_lasso(lbda, w):
     return np.sign(w) * np.maximum(np.absolute(w) - lbda, 0)
 
 
+def kernel_ridge(lbda, alpha, K):
+    return lbda * np.sum(alpha.T.dot(K).dot(alpha)) / 2
+
+
+def grad_kernel_ridge(lbda, alpha, K):
+    return lbda * K.dot(alpha)
+
+
 def ridge(lbda, w):
     """
         Value of the ridge penalization at coefs_ with strength lbda

@@ -6,7 +6,7 @@ from sklearn.model_selection import KFold
 import tools
 import models
 import metrics
-from penalizations import ridge, grad_ridge
+from penalizations import kernel_ridge, grad_kernel_ridge
 
 initial_time = time()
 
@@ -15,26 +15,36 @@ print("Cross-validation script", end="\n\n")
 path_to_data = "data/"
 data_loader = tools.DataLoader(path_to_data=path_to_data)
 
-# Load and compute the features
-X_train, y_train = data_loader.load_data("color_Xtr.csv", "Ytr.csv")
+kernel_method = True
 
-features_file = "color_1_filter_Xtr.npy"
-X_train = np.load(path_to_data + features_file)
-
-print("Number of features :", X_train.shape[1], end="\n\n")
+if kernel_method:
+    K_train, y_train = data_loader.load_kernel(
+        "grey_Ktr.csv",
+        "Ytr.csv"
+    )
+else:
+    features_file = "color_1_filter_Xtr.npy"
+    X_train = np.load(path_to_data + features_file)
+    y_train = data_loader.load_labels_only("Ytr.csv")
+    print("Number of features :", X_train.shape[1], end="\n\n")
 
 # Cross validation
 n_splits = 5
 kf = KFold(n_splits=n_splits, shuffle=True, random_state=2)
 cv_scores = []
-cv_splits = kf.split(np.arange(len(y_train)))
+
+if kernel_method:
+    cv_splits = kf.split(np.arange(len(K_train)))
+else:
+    cv_splits = kf.split(np.arange(len(X_train)))
 
 # Define the model
-kernel_model = models.LogisticRegression(
-    penalty=ridge,
-    grad_penalty=grad_ridge,
-    lbda=0.1,
-    multi_class="multinomial"
+kernel_model = models.KernelLogisticRegression(
+    penalty=kernel_ridge,
+    grad_penalty=grad_kernel_ridge,
+    lbda=5,
+    multi_class="multinomial",
+    kernel="precomputed"
 )
 
 
@@ -46,14 +56,24 @@ for n_fold, (train_fold_idx, test_fold_idx) in enumerate(cv_splits):
         flush=True
     )
 
-    X_fold_train = X_train[train_fold_idx]
+    if kernel_method:
+        K_fold_train = K_train[train_fold_idx, :][:, train_fold_idx]
+    else:
+        X_fold_train = X_train[train_fold_idx]
     y_fold_train = y_train[train_fold_idx]
 
-    X_fold_test = X_train[test_fold_idx]
+    if kernel_method:
+        K_fold_test = K_train[test_fold_idx, :][:, train_fold_idx]
+    else:
+        X_fold_test = X_train[test_fold_idx]
     y_fold_test = y_train[test_fold_idx]
 
-    kernel_model.fit(X_fold_train, y_fold_train)
-    y_pred = kernel_model.predict(X_fold_test)
+    if kernel_method:
+        kernel_model.fit(K_fold_train, y_fold_train)
+        y_pred = kernel_model.predict(K_fold_test)
+    else:
+        kernel_model.fit(X_fold_train, y_fold_train)
+        y_pred = kernel_model.predict(X_fold_test)
 
     fold_score = metrics.accuracy_score(y_pred, y_fold_test)
 
