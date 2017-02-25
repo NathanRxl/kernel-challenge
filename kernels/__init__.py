@@ -1,1 +1,1 @@
-from .kernels import linear_kernel
+from .kernels import linear_kernel, intersection_kernel

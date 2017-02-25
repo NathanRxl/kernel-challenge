@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 
 def rgb2grey(X):
@@ -23,8 +24,8 @@ def color_images_from_df(color_df):
     n_images = X.shape[0]
     color_images = np.zeros((n_images, 32, 32, 3), dtype="float32")
     for i in range(3):
-        color_images[:,:,:,i] = (X[:,32*32*i:32*32*(i+1)]
-                                 .reshape(n_images, 32, 32))
+        color_images[:, :, :, i] = (X[:, 32*32*i:32*32*(i + 1)]
+                                    .reshape(n_images, 32, 32))
     return color_images
 
 
@@ -36,3 +37,20 @@ def gray_images_from_df(gray_df):
     images = gray_df.as_matrix().astype(np.float32)
     n_images = images.shape[0]
     return images.reshape((n_images, 32, 32))
+
+
+def histogram_df(X_df, bins):
+    global_histogram = np.histogram(X_df, bins=bins, normed=True)
+    histogram_range = global_histogram[1].min(), global_histogram[1].max()
+
+    hist_dict = dict()
+
+    for row_idx in range(len(X_df)):
+        hist_dict[row_idx] = np.histogram(
+            X_df.loc[row_idx],
+            bins=bins,
+            range=histogram_range,
+            normed=False
+        )[0]
+
+    return pd.DataFrame(data=hist_dict).T / X_df.shape[1]
