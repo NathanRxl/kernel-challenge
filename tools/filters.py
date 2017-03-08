@@ -110,3 +110,132 @@ def bilateral_filter(images, window_size, sigma):
                   .format(percentage=clean_percentage))
 
     return filtered_images.reshape((n_images, 32 * 32 * 3))
+
+
+def compute_hog_one_image(image, n_orientations, pixels_per_cell,
+                          cells_per_block, method):
+    image = image.astype('float')
+
+    sy, sx = image.shape
+
+    # Compute the horizontal gradient
+    gx = np.zeros((sy, sx))
+    gx[:,0] = image[:,1] - image[:,0]
+    gx[:,-1] = image[:,-1] - image[:,-2]
+    gx[:,1:-1] = 0.5 * (image[:,2:] - image[:,:-2])
+
+    # Compute the vertical gradient
+    gy = np.zeros((sy, sx))
+    gy[0,:] = image[1,:] - image[0,:]
+    gy[-1,:] = image[-1,:] - image[-2,:]
+    gy[1:-1,:] = 0.5 * (image[2:,:] - image[:-2,:])
+
+    cy, cx = pixels_per_cell
+    by, bx = cells_per_block
+    n_cellsx = int(sx // cx)
+    n_cellsy = int(sy // cy)
+
+    # Compute the gradient norm matrix and gradient orientations
+    gradient_norm = np.sqrt(gx ** 2 + gy ** 2)
+    orientations = (180 * (np.arctan2(gy, gx)) / np.pi) % 180
+
+    orientation_histogram = np.zeros((n_cellsy, n_cellsx, n_orientations))
+    for i in range(n_orientations):
+        # Select correct orientations
+        select_orientations = np.where(
+            orientations < 180 / n_orientations * (i + 1),
+            orientations,
+            0
+        )
+        select_orientations = np.where(
+            orientations >= 180 / n_orientations * i,
+            select_orientations,
+            0
+        )
+
+        # Select the gradient values according to the current orientation
+        select_gradient_norm = np.where(
+            select_orientations > 0,
+            gradient_norm,
+            0
+        )
+
+        # Compute the histogram of each cell for the current orientation
+        for y in range(n_cellsy):
+            for x in range(n_cellsx):
+                hist_val = np.sum(
+                    select_gradient_norm[cy*y:cy*(y+1),cx*x:cx*(x+1)]
+                )
+                hist_val = hist_val / (cx * cy)
+                orientation_histogram[x,y,i] = hist_val
+
+    # Normalize the blocks
+    n_blocksx = (n_cellsx - bx) + 1
+    n_blocksy = (n_cellsy - by) + 1
+    normalised_blocks = np.zeros((n_blocksy, n_blocksx, by, bx, n_orientations))
+    for x in range(n_blocksx):
+        for y in range(n_blocksy):
+            block = orientation_histogram[y:y + by, x:x + bx, :]
+            eps = 1e-5
+
+            if method == 'L1':
+                block_n = block / (np.sum(np.abs(block)) + eps)
+            elif method == 'L1-sqrt':
+                block_n = np.sqrt(block / (np.sum(np.abs(block)) + eps))
+            elif method == 'L2':
+                block_n = block / np.sqrt(np.sum(block ** 2) + eps ** 2)
+            elif method == 'L2-Hys':
+                block_n = block / np.sqrt(np.sum(block ** 2) + eps ** 2)
+                block_n = np.minimum(block_n, 0.2)
+                block_n = block_n / np.sqrt(np.sum(block ** 2) + eps ** 2)
+
+            normalised_blocks[y, x, :] = block_n
+
+    result_dimension = n_blocksy * n_blocksx * by * bx * n_orientations
+    return normalised_blocks.reshape(result_dimension)
+
+
+def hog_dimension(images_shape, n_orientations, pixels_per_cell, cells_per_block):
+    sy, sx = images_shape
+    cy, cx = pixels_per_cell
+    by, bx = cells_per_block
+
+    n_cellsx = int(sx // cx)
+    n_cellsy = int(sy // cy)
+
+    n_blocksx = (n_cellsx - bx) + 1
+    n_blocksy = (n_cellsy - by) + 1
+
+    return n_blocksy * n_blocksx * by * bx * n_orientations
+
+
+def hog_filter(images, n_orientations, pixels_per_cell, cells_per_block,
+               method):
+    n_features = hog_dimension(
+        images_shape=images[0].shape,
+        n_orientations=n_orientations,
+        pixels_per_cell=pixels_per_cell,
+        cells_per_block=cells_per_block,
+    )
+    n_images = images.shape[0]
+
+    percentage_filtered = 0
+    percentage_step = 0.05
+
+    hog_features = np.empty((n_images,n_features))
+    for i in range(n_images):
+        hog_features[i] = compute_hog_one_image(
+            image=images[i],
+            n_orientations=n_orientations,
+            pixels_per_cell=pixels_per_cell,
+            cells_per_block=cells_per_block,
+            method=method,
+        )
+
+        if i > (percentage_filtered + percentage_step) * n_images:
+            percentage_filtered += percentage_step
+            clean_percentage = int(round(100 * percentage_filtered,0))
+            print("\t\t{percentage}% of the images have been filtered"
+                  .format(percentage=clean_percentage))
+
+    return hog_features

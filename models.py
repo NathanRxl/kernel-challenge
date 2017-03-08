@@ -42,7 +42,7 @@ class KernelLogisticRegression:
 
     def _multinomial(self, x):
         """ Multinomial function (overflow-proof) """
-        exp_x = np.exp(x - np.max(x))
+        exp_x = np.exp(x - np.max(x, axis=1).reshape((len(x),1)))
         sum_exp = np.sum(exp_x, axis=1).reshape(len(exp_x), 1)
         multinomial_result = exp_x / sum_exp
         return multinomial_result

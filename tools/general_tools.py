@@ -20,7 +20,7 @@ def color_images_from_df(color_df):
     Convert the dataframe of the color images into a numpy matrix of size :
     (number_images, 32, 32, 3)
     """
-    X = color_df.as_matrix()
+    X = color_df
     n_images = X.shape[0]
     color_images = np.zeros((n_images, 32, 32, 3), dtype="float32")
     for i in range(3):
