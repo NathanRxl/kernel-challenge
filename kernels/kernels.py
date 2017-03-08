@@ -73,3 +73,22 @@ def linear_kernel(X_test, X_train):
             [np.arange(0, X_test_len), :]
             [:, np.arange(X_test_len, X_train_len + X_test_len)]
         )
+
+
+def polynomial_kernel_test(X_test, X_train, K_diag_train, d, r, gamma):
+    kernel = np.power(gamma * X_test.dot(X_train.T) + r, d)
+
+    test_kernel = np.power(gamma * X_test.dot(X_test.T) + r, d)
+    K_test_diag = np.diag(test_kernel).reshape((X_test.shape[0],1))
+
+    return kernel / np.sqrt(K_test_diag.dot(K_diag_train.T))
+
+
+def polynomial_kernel_train(X_train, d, r, gamma, output_diag=False):
+    kernel = np.power(gamma * X_train.dot(X_train.T) + r, d)
+    K_diag = np.diag(kernel).reshape((X_train.shape[0],1))
+
+    if output_diag:
+        return kernel / np.sqrt(K_diag.dot(K_diag.T)), K_diag
+    else:
+        return kernel / np.sqrt(K_diag.dot(K_diag.T))

@@ -54,3 +54,7 @@ def histogram_df(X_df, bins):
         )[0]
 
     return pd.DataFrame(data=hist_dict).T / X_df.shape[1]
+
+
+def normalize(images):
+    return (images - np.mean(images, axis=0)) / np.std(images, axis=0)

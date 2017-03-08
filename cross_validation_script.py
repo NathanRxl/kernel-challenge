@@ -6,6 +6,7 @@ from sklearn.model_selection import KFold
 import tools
 import models
 import metrics
+import kernels
 from penalizations import kernel_ridge, grad_kernel_ridge, ridge, grad_ridge
 
 initial_time = time()
@@ -19,11 +20,46 @@ kernel_method = True
 
 if kernel_method:
     y_train = data_loader.load_labels_only("Ytr.csv")
-    X_train = np.load("data/hog_grey_block_4_Xtr.npy")
-    gamma = .01
-    d = 6.
-    r = 10.0
-    kernel = np.power(gamma * X_train.dot(X_train.T) + r, d)
+
+    # Compute first kernel
+    X_train_1 = np.load("data/hog_grey_block_4_Xtr.npy")
+    poly_kernel_parameters_1 = {
+        "gamma": .01,
+        "d": 6.,
+        "r": 10.0,
+    }
+    K_train_1 = kernels.polynomial_kernel_train(
+        X_train_1, **poly_kernel_parameters_1
+    )
+
+    # Compute second kernel
+    X_train_2 = np.load("data/color_filter_window_5_Xtr.npy")
+    X_train_2 = tools.normalize(X_train_2)
+    poly_kernel_parameters_2 = {
+        "gamma": .01,
+        "d": 6.,
+        "r": 2.0,
+    }
+    K_train_2 = kernels.polynomial_kernel_train(
+        X_train_2, **poly_kernel_parameters_2
+    )
+
+    # Compute third kernel
+    X_train_3 = np.load("data/color_filter_window_3_Xtr.npy")
+    X_train_3 = tools.normalize(X_train_3)
+    poly_kernel_parameters_3 = {
+        "gamma": .01,
+        "d": 6.,
+        "r": 2.0,
+    }
+    K_train_3 = kernels.polynomial_kernel_train(
+        X_train_3, **poly_kernel_parameters_3
+    )
+
+    # Combine the kernels
+    alpha = 10. * 1e-4
+    beta = 12. * 1e-4
+    kernel = alpha * K_train_2 + (1 - alpha) * K_train_1 + beta * K_train_3
     K_diag = np.diag(kernel).reshape((5000,1))
     K_train = kernel / np.sqrt(K_diag.dot(K_diag.T))
 
@@ -32,18 +68,6 @@ else:
     X_train = np.load(path_to_data + features_file)
     y_train = data_loader.load_labels_only("Ytr.csv")
     print("Number of features :", X_train.shape[1], end="\n\n")
-
-
-# X_train = np.load("data/color_filter_window_3_Xtr.npy")
-# X_train = (X_train - np.mean(X_train, axis=0)) / np.std(X_train, axis=0)
-# gamma = .01
-# d = 6.
-# r = 2.0
-# kernel = np.power(gamma * X_train.dot(X_train.T) + r, d)
-# K_diag = np.diag(kernel).reshape((5000,1))
-# K_train = kernel / np.sqrt(K_diag.dot(K_diag.T))
-
-print(X_train.shape)
 
 
 # Cross validation
