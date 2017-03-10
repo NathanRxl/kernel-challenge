@@ -26,26 +26,26 @@ if kernel_method:
     poly_kernel_parameters_1 = {
         "gamma": .01,
         "d": 6.,
-        "r": 10.0,
+        "r": 12.0,
     }
     K_train_1 = kernels.polynomial_kernel_train(
         X_train_1, **poly_kernel_parameters_1
     )
+    # K_train = K_train_1
 
-    # Compute second kernel
-    X_train_2 = np.load("data/color_filter_window_5_Xtr.npy")
-    X_train_2 = tools.normalize(X_train_2)
+    X_train_2 = np.load("data/hog_grey_cell_4_Xtr.npy")
     poly_kernel_parameters_2 = {
         "gamma": .01,
-        "d": 6.,
-        "r": 2.0,
+        "d": 8.,
+        "r": 4.2,
     }
     K_train_2 = kernels.polynomial_kernel_train(
         X_train_2, **poly_kernel_parameters_2
     )
+    # K_train = K_train_2
 
-    # Compute third kernel
-    X_train_3 = np.load("data/color_filter_window_3_Xtr.npy")
+    # Compute second kernel
+    X_train_3 = np.load("data/color_filter_window_5_Xtr.npy")
     X_train_3 = tools.normalize(X_train_3)
     poly_kernel_parameters_3 = {
         "gamma": .01,
@@ -56,10 +56,43 @@ if kernel_method:
         X_train_3, **poly_kernel_parameters_3
     )
 
+    # Compute fourth kernel
+    X_train_4 = np.load("data/hog_grey_cell_8_Xtr.npy")
+    poly_kernel_parameters_4 = {
+        "gamma": .01,
+        "d": 8.,
+        "r": 0.1,
+    }
+    K_train_4 = kernels.polynomial_kernel_train(
+        X_train_4, **poly_kernel_parameters_4
+    )
+    # K_train = K_train_4
+
+    # # Compute third kernel
+    # X_train_3 = np.load("data/color_filter_window_3_Xtr.npy")
+    # X_train_3 = tools.normalize(X_train_3)
+    # poly_kernel_parameters_3 = {
+    #     "gamma": .01,
+    #     "d": 6.,
+    #     "r": 2.0,
+    # }
+    # K_train_3 = kernels.polynomial_kernel_train(
+    #     X_train_3, **poly_kernel_parameters_3
+    # )
+
     # Combine the kernels
-    alpha = 10. * 1e-4
-    beta = 12. * 1e-4
-    kernel = alpha * K_train_2 + (1 - alpha) * K_train_1 + beta * K_train_3
+    # alpha = 200 * 1e-4
+    alpha = 0.065
+    alpha = 0.065
+    beta = 25. * 1e-4
+    gamma = 30 * 1e-4
+    # kernel = alpha * K_train_2 + (1 - alpha) * K_train_1 + beta * K_train_3
+    kernel = (
+        (1 - alpha) * K_train_1
+        + alpha * K_train_2
+        + beta * K_train_3
+        + gamma * K_train_4
+    )
     K_diag = np.diag(kernel).reshape((5000,1))
     K_train = kernel / np.sqrt(K_diag.dot(K_diag.T))
 

@@ -11,9 +11,10 @@ path_to_data = "data/"
 data_loader = tools.DataLoader(path_to_data=path_to_data)
 
 block_size = 4
+cell_size = 8
 hog_parameters = {
     "n_orientations": 8,
-    "pixels_per_cell": (2, 2),
+    "pixels_per_cell": (cell_size, cell_size),
     "cells_per_block": (block_size, block_size),
     "method": "L1",
 }
@@ -32,7 +33,7 @@ train_hog = tools.hog_filter(train_images, **hog_parameters)
 train_hog = (train_hog - np.mean(train_hog, axis=0)) / np.std(train_hog, axis=0)
 print("\tOK")
 
-output_filename = "hog_grey_block_" + str(block_size) + "_Xtr"
+output_filename = "hog_grey_cell_" + str(cell_size) + "_Xtr"
 print(
     "\tCreate " + path_to_data + output_filename + ".npy file ... ",
     end="",
@@ -55,7 +56,7 @@ test_hog = tools.hog_filter(test_images, **hog_parameters)
 test_hog = (test_hog - np.mean(test_hog, axis=0)) / np.std(test_hog, axis=0)
 print("\tOK")
 
-output_filename = "hog_grey_block_" + str(block_size) + "_Xte"
+output_filename = "hog_grey_cell_" + str(cell_size) + "_Xte"
 print(
     "\tCreate " + path_to_data + output_filename + ".npy file ... ",
     end="",
