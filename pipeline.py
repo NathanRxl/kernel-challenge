@@ -21,7 +21,7 @@ if kernel_method:
     y_train = data_loader.load_labels_only("Ytr.csv")
 
     # Compute the first train kernel
-    X_train_1 = np.load("data/hog_grey_block_4_Xtr.npy")
+    X_train_1 = np.load("data/hog_grey_cell_2_block_4_Xtr.npy")
     poly_kernel_parameters_1 = {
         "gamma": .01,
         "d": 6.,
@@ -32,7 +32,7 @@ if kernel_method:
     )
 
     # Compute the second train kernel
-    X_train_2 = np.load("data/hog_grey_cell_4_Xtr.npy")
+    X_train_2 = np.load("data/hog_grey_cell_4_block_4_Xtr.npy")
     X_train_2 = tools.normalize(X_train_2)
     poly_kernel_parameters_2 = {
         "gamma": .01,
@@ -56,7 +56,7 @@ if kernel_method:
     )
 
     # Compute fourth train kernel
-    X_train_4 = np.load("data/hog_grey_cell_8_Xtr.npy")
+    X_train_4 = np.load("data/hog_grey_cell_8_block_4_Xtr.npy")
     poly_kernel_parameters_4 = {
         "gamma": .01,
         "d": 8.,
@@ -66,16 +66,28 @@ if kernel_method:
         X_train_4, **poly_kernel_parameters_4, output_diag=True
     )
 
+    # Compute fifth kernel
+    X_train_5 = np.load("data/hog_grey_cell_16_block_1_Xtr.npy")
+    poly_kernel_parameters_5 = {
+        "gamma": .01,
+        "d": 8.,
+        "r": 0.05,
+    }
+    K_train_5, K_diag_train_5 = kernels.polynomial_kernel_train(
+        X_train_5, **poly_kernel_parameters_5, output_diag=True
+    )
+
     # Combine the kernels
     alpha = 0.065
     beta = 25. * 1e-4
-    gamma = 30 * 1e-4
-    # kernel = alpha * K_train_2 + (1 - alpha) * K_train_1 + beta * K_train_3
+    gamma = 15.5 * 1e-4
+    delta = 0.2 * 1e-4
     kernel = (
         (1 - alpha) * K_train_1
         + alpha * K_train_2
         + beta * K_train_3
         + gamma * K_train_4
+        + delta * K_train_5
     )
     K_diag_train = np.diag(kernel).reshape((5000,1))
     K_train = kernel / np.sqrt(K_diag_train.dot(K_diag_train.T))
@@ -119,13 +131,12 @@ if kernel_method:
     ###############################
     # Compute the test/test kernels
     # Compute the first test/test kernel
-    X_test_1 = np.load("data/hog_grey_block_4_Xte.npy")
+    X_test_1 = np.load("data/hog_grey_cell_2_block_4_Xte.npy")
     K_test_1 = kernels.polynomial_kernel_train(
         X_test_1, **poly_kernel_parameters_1
     )
     # Compute the second test/test kernel
-    X_test_2 = np.load("data/hog_grey_cell_4_Xte.npy")
-    X_test_2 = tools.normalize(X_test_2)
+    X_test_2 = np.load("data/hog_grey_cell_4_block_4_Xte.npy")
     K_test_2 = kernels.polynomial_kernel_train(
         X_test_2, **poly_kernel_parameters_2
     )
@@ -136,10 +147,14 @@ if kernel_method:
         X_test_3, **poly_kernel_parameters_3
     )
     # Compute the third test/test kernel
-    X_test_4 = np.load("data/hog_grey_cell_8_Xte.npy")
-    X_test_4 = tools.normalize(X_test_4)
+    X_test_4 = np.load("data/hog_grey_cell_8_block_4_Xte.npy")
     K_test_4 = kernels.polynomial_kernel_train(
         X_test_4, **poly_kernel_parameters_4
+    )
+    # Compute the third test/test kernel
+    X_test_5 = np.load("data/hog_grey_cell_16_block_1_Xte.npy")
+    K_test_5 = kernels.polynomial_kernel_train(
+        X_test_5, **poly_kernel_parameters_5
     )
     # Combine the kernels
     kernel = (
@@ -147,6 +162,7 @@ if kernel_method:
         + alpha * K_test_2
         + beta * K_test_3
         + gamma * K_test_4
+        + delta * K_test_5
     )
     K_diag_test_test = np.diag(kernel).reshape((2000,1))
     ###############################
@@ -163,12 +179,16 @@ if kernel_method:
     K_test_4 = kernels.polynomial_kernel_test(
         X_test_4, X_train_4, K_diag_train_4, **poly_kernel_parameters_4
     )
+    K_test_5 = kernels.polynomial_kernel_test(
+        X_test_5, X_train_5, K_diag_train_5, **poly_kernel_parameters_5
+    )
     # Combine the kernels
     kernel = (
         (1 - alpha) * K_test_1
         + alpha * K_test_2
         + beta * K_test_3
         + gamma * K_test_4
+        + delta * K_test_5
     )
     K_test = kernel / np.sqrt(K_diag_test_test.dot(K_diag_train.T))
 else:
@@ -197,7 +217,7 @@ submission_folder_path = "submissions/"
 tools.create_submission(
     y_pred,
     submission_folder_path=submission_folder_path,
-    output_filename="hog_cell_2_4_8_bilateral_5.txt",
+    output_filename="best_submission.txt",
 )
 print("OK")
 

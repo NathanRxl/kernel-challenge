@@ -14,7 +14,8 @@ notebooks/
 .ipynb*
 
 # Submissions
-submissions/
+submissions/*
+!submissions/sample_submission.csv
 
 # References
 references/

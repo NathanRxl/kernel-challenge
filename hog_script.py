@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 from time import time
 
@@ -10,8 +11,13 @@ print("Gradient histogram script", end="\n\n")
 path_to_data = "data/"
 data_loader = tools.DataLoader(path_to_data=path_to_data)
 
-block_size = 4
-cell_size = 8
+if len(sys.argv) < 2:
+    cell_size = 16
+    block_size = 1
+else:
+    cell_size = int(sys.argv[1])
+    block_size = int(sys.argv[2])
+
 hog_parameters = {
     "n_orientations": 8,
     "pixels_per_cell": (cell_size, cell_size),
@@ -33,7 +39,8 @@ train_hog = tools.hog_filter(train_images, **hog_parameters)
 train_hog = (train_hog - np.mean(train_hog, axis=0)) / np.std(train_hog, axis=0)
 print("\tOK")
 
-output_filename = "hog_grey_cell_" + str(cell_size) + "_Xtr"
+output_filename = "hog_grey_cell_{cell}_block_{block}_Xtr"\
+                  .format(cell=cell_size, block=block_size)
 print(
     "\tCreate " + path_to_data + output_filename + ".npy file ... ",
     end="",
@@ -56,7 +63,8 @@ test_hog = tools.hog_filter(test_images, **hog_parameters)
 test_hog = (test_hog - np.mean(test_hog, axis=0)) / np.std(test_hog, axis=0)
 print("\tOK")
 
-output_filename = "hog_grey_cell_" + str(cell_size) + "_Xte"
+output_filename = "hog_grey_cell_{cell}_block_{block}_Xte" \
+                  .format(cell=cell_size, block=block_size)
 print(
     "\tCreate " + path_to_data + output_filename + ".npy file ... ",
     end="",

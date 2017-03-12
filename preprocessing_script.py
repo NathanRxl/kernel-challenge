@@ -9,9 +9,9 @@ print("Preprocessing script", end="\n\n")
 path_to_data = "data/"
 data_loader = tools.DataLoader(path_to_data=path_to_data)
 
-preprocess_color = False
-preprocess_grey = False
-preprocess_hist = True
+preprocess_color = True
+preprocess_grey = True
+preprocess_hist = False
 
 print("\tLoad and preprocess train data ... ", end="", flush=True)
 

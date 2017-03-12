@@ -11,7 +11,7 @@ path_to_data = "data/"
 data_loader = tools.DataLoader(path_to_data=path_to_data)
 
 # Filtering parameters to apply on train and test images
-window_size = 1
+window_size = 5
 filtering_parameters_list = [
     {"window_size": window_size, "sigma": 10},
 ]
