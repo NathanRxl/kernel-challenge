@@ -1,6 +1,3 @@
-# Forbidden tools for submission
-from .filters import gaussian_filter, skimage_bilateral_filter
-
 # Allowed tools for submission
 from .filters import bilateral_filter, hog_filter
 from .general_tools import (

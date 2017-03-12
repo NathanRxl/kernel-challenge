@@ -1,46 +1,5 @@
 import numpy as np
 
-from cv2 import GaussianBlur
-from skimage.restoration import denoise_bilateral
-
-
-def gaussian_filter(images, window_size, sigma, color=False):
-    """
-    Apply a gaussian filter to every image in images.
-    images should be of shape : (n_images, 32, 32, 3) or (n_images, 32, 32)
-    """
-    n_images = images.shape[0]
-    window = (window_size, window_size)
-    filtered_images = np.zeros(images.shape)
-    for i in range(n_images):
-        filtered_images[i] = GaussianBlur(images[i], window, sigma)
-
-    if color:
-        images_size = 32 * 32 * 3
-    else:
-        images_size = 32 * 32
-
-    return filtered_images.reshape((n_images, images_size))
-
-
-def skimage_bilateral_filter(images, d, sigma, color=False):
-    """
-    Apply a bilateral filter to every image in images.
-    images should be of shape : (n_images, 32, 32, 3) or (n_images, 32, 32)
-    """
-    n_images = images.shape[0]
-    filtered_images = np.zeros(images.shape)
-    for i in range(n_images):
-        # 0.47 is because denoise_bilateral only accepts positive values
-        filtered_images[i] = denoise_bilateral(images[i] + 0.47, d, sigma, sigma)
-
-    if color:
-        images_size = 32 * 32 * 3
-    else:
-        images_size = 32 * 32
-
-    return filtered_images.reshape((n_images, images_size))
-
 
 def bilateral_filter_one_image(image, window_size, sigma):
     """
